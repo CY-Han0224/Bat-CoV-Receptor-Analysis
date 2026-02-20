@@ -9,6 +9,6 @@ Catanzaro, N. J., Wu, Z., Fan, C., Jefferson, V., Abdelgadir, A., Schäfer, A., 
 
 進度：
 - [x] 一：自動化資料收集 ( NCBI 連線與序列解析)
-- [ ] 二：將下載的序列永久儲存為 `.fasta` 檔案
+- [x] 二：將下載的序列永久儲存為 `.GenBank` 檔案
 - [ ] 三：實作序列切片，取得 RBD 區域
 - [ ] 四：計算相似度與繪製親緣關係圖
