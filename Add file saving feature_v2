@@ -1,0 +1,25 @@
+#version2
+from Bio import Entrez
+from Bio.Seq import Seq
+from Bio import SeqIO
+import time
+
+#設定 API(NCBI 規定需要提供電子郵件)
+Entrez.email = "C54146177@gs.ncku.edu.tw"
+Entrez.tool = "Bat_RBD_Project"
+#論文 Table 1 中在歐洲刺蝟 (Erinaceus europaeus)上發現的病毒
+virus_list =  ['MW246796', 'MW246795', 'MW246797', 'MW246800', 'MW246802', 'MW246798', 'MW246799']
+#儲存序列物件的list
+records_box = []
+print('downloading and ready to save\n')
+for accession in virus_list:
+    print(f'trying to download {accession}...')
+    handle = Entrez.efetch( db = 'nucleotide', id = accession , rettype = 'fasta', retmode = 'text' )
+    record = SeqIO.read(handle, 'fasta')
+    handle.close()
+    #將解析好的序列放進list
+    records_box.append(record)
+    time.sleep(1)
+print(f"\n下載完畢，總共有 {len(records_box)} 條序列。")
+SeqIO.write(records_box, 'viruses_box.fasta', 'fasta')
+print('已儲存至硬碟')
