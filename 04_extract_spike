@@ -1,0 +1,37 @@
+#version4。在檔案中尋找 S 蛋白的位置
+from Bio import SeqIO
+from Bio.Seq import Seq
+from Bio.SeqRecord import SeqRecord
+#建立放 S 蛋白序列的list
+spike_records = []
+print("尋找 Spike 蛋白...\n")
+with open("viruses_box.gb", "r") as handle:
+    for record in SeqIO.parse(handle, "gb"): #用parse
+        print(f"========== analyzing: {record.id} ==========")
+        for feature in record.features:
+            if feature.type == "CDS": #尋找有被轉譯成蛋白質的區域
+                if "product" in feature.qualifiers: #qualifiers為feature的說明內容，防禦性確認product
+                    product_name = feature.qualifiers["product"][0] #qualifiers裡的value是list，將list內容取出
+                    if "spike" in product_name.lower():
+                        print(f"found S protein in {record.id} ")
+                        print(f"location: {feature.location}")
+                        if "translation" in feature.qualifiers: #如果有提供此病毒的氨基酸序列，使用NCBI提供的氨基酸序列
+                            protein_seq_string = feature.qualifiers["translation"][0]
+                            print("（use NCBI sequence）")
+                        else: #如果沒有提供，使用轉譯功能
+                            spike_dna = feature.extract(record.seq) #extract 自動讀取座標並剪下
+                            protein_seq_string = str(spike_dna.translate())
+                            print("（自行切割 DNA 並翻譯）")
+                        print(f"蛋白質長度: {len(protein_seq_string)} 個胺基酸")
+                        print("-" * 30)
+                        #此時只有純文字序列，沒有 id，需要加入 id 。需要將它包裝成序列物件 (SeqRecord)，以便後續存檔。
+                        protein_record = SeqRecord( #把純字串變成 Seq 物件
+                            Seq(protein_seq_string),  #放入純胺基酸序列
+                            id=record.id,  #賦予這條蛋白與原病毒相同的 id
+                            description="Spike protein"  #描述
+                        )
+                        spike_records.append(protein_record)
+                        break
+print(f"共收集到 {len(spike_records)} 條 Spike")
+SeqIO.write(spike_records, "spike_proteins.fasta", "fasta") #將全部的物件儲存成一個fasta檔
+print("Spike 蛋白已儲存為 spike_proteins.fasta")
